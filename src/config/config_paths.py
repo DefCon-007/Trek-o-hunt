@@ -12,3 +12,5 @@ log_op_path = parent_dir + '/logs'
 log_config_path = parent_dir + '/src/config/logging.conf'
 
 templates_path = parent_dir + '/webContent/templates'
+
+images_path = output_data_dir + '/images'
