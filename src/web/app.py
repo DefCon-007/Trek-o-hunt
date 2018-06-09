@@ -1,14 +1,14 @@
 import json
 import src.config.config_paths as config_paths
-from src.utility.common_functions import does_dir_exist, create_dir, get_os_type
+from src.utility.common_functions import does_dir_exist, create_dir
 from flask import Flask, render_template, request, Response
+from src.actions.login import login as action_login
+from src.actions.register import register as action_register
 from src.utility.get_logger import MyLogger
 
 logger = MyLogger.logger
 
 app = Flask(__name__)
-if get_os_type() == 'Windows':
-	from src.utility import apply_excel_patch
 
 
 @app.route("/")
@@ -16,47 +16,29 @@ def main():
 	return render_template('index.html')
 
 
-@app.route("/createInvoice", methods=['POST'])
-def create_invoice():
-	req = json.loads(request.data.decode("utf-8"))
-	logger.info("Got request:")
-	logger.info(req)
-
-	origin = req["origin"]
-	if origin == "amazon":
-		hsn = req["hsn"]
-		avc = AmazonVendorClass()
-		try:
-			avc.create_invoice(order_id=req["order_id"], hsn=hsn)
-		except Exception as e:
-			logger.exception(str(e))
-			return Response("Failure", status=100)
-	elif origin == "flipkart":
-		fvc = FlipkartVendorClass()
-		try:
-			fvc.create_invoice(order_id=req["order_id"])
-		except Exception as e:
-			logger.exception(str(e))
-			return Response("Failure", status=100)
-	else:
-		ovc = OtherVendorClass()
-		try:
-			ovc.create_invoice(**req["order"])
-		except Exception as e:
-			logger.exception(str(e))
-			return Response("Failure", status=100)
-	return "Success"
-
-
-@app.route("/getOrdersForMonth", methods=["POST"])
-def get_month_orders():
+@app.route("/trekohunt/login", methods=["POST"])
+def login():
 	req = json.loads(request.data.decode("utf-8"))
 	logger.info("Got request:")
 	logger.info(req)
 
 	try:
-		orders_list = get_orders_for_month(**req)
-		return Response(json.dumps(orders_list), status=200, mimetype="application/json")
+		ret = action_login(**req)
+		return Response(json.dumps(ret), status=200, mimetype="application/json")
+	except Exception as e:
+		logger.exception(e)
+		return Response("Failure",  status=100)
+
+
+@app.route("/trekohunt/register", methods=["POST"])
+def register():
+	req = json.loads(request.data.decode("utf-8"))
+	logger.info("Got request:")
+	logger.info(req)
+
+	try:
+		ret = action_register(**req)
+		return Response(json.dumps(ret), status=200, mimetype="application/json")
 	except Exception as e:
 		logger.exception(e)
 		return Response("Failure",  status=100)

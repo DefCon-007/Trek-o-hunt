@@ -29,7 +29,7 @@ class Conn(Singleton):
 
 class MongoDB(ABC):
 
-	_db_name = "accounting"
+	_db_name = "trekohunt"
 
 	def __init__(self):
 		self._conn = Conn.get_connection()

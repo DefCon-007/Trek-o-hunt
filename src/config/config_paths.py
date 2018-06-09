@@ -7,7 +7,7 @@ output_data_dir = configs["output_data_dir"]
 port_no = int(configs["port_no"])
 level = configs["level"]
 
-log_op_path = output_data_dir + '/logs'
+log_op_path = parent_dir + '/logs'
 
 log_config_path = parent_dir + '/src/config/logging.conf'
 
