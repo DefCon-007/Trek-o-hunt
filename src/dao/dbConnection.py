@@ -81,10 +81,10 @@ class MyMongoDB(MongoDB):
 		print(result)
 
 	def insert_one(self, value):
-		invoice_no = self.get_next_sequence_value(self._collection_name)
-		value['_id'] = invoice_no
+		# invoice_no = self.get_next_sequence_value(self._collection_name)
+		# value['_id'] = invoice_no
 		result = self._collection.insert_one(value)
-		return result, invoice_no
+		return result
 
 	def find(self, query):
 		result = self._collection.find(query)

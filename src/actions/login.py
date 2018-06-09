@@ -17,7 +17,7 @@ def login(**kwargs):
 			'message': "Successfully fetched data",
 			'name': user_query_resp[0]['name'],
 			'phone': user_query_resp[0]['phone'],
-			'user_id': user_query_resp[0]['_id']
+			'user_id': str(user_query_resp[0]['_id'])
 		}
 	elif len(user_query_resp) == 0:
 		return {

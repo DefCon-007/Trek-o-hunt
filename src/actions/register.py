@@ -15,9 +15,6 @@ def register(**kwargs):
 			"message": "User already registered!"
 		}
 	else:
-		user_id = kwargs['user_id']
-		del kwargs['user_id']
-		kwargs['_id'] = user_id
 		user_query_resp = db_user.insert_one(kwargs)
 		logger.info(user_query_resp)
 		ret = {
