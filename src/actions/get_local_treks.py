@@ -1,4 +1,7 @@
 from src.dao.dbConnection import MyMongoDB
+from src.utility.get_logger import MyLogger
+
+logger = MyLogger.logger
 
 
 def get_local_treks(trek_coordinate=100, radius=100):
@@ -8,5 +11,12 @@ def get_local_treks(trek_coordinate=100, radius=100):
 	Array of all treks within the circle
 	"""
 	db_treks = MyMongoDB("Treks")
-	local_treks = [trek for trek in db_treks.find({})]
+	local_treks = []
+	for trek in db_treks.find({}):
+		del trek['_id']
+		local_treks.append(trek)
 	return local_treks
+
+
+if __name__ == '__main__':
+	logger.info([i for i in get_local_treks()])

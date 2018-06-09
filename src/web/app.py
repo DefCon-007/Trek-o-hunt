@@ -106,9 +106,10 @@ def get_images():
 @app.route("/trekohunt/get_top_treks", methods=['GET'])
 def get_top_treks():
 	top_treks = action_get_top_treks()
+	top_treks = {'status': 200, "top_treks":top_treks}
 	if len(top_treks) > 0:
 		logger.info("Sending back: {}".format(top_treks))
-		return Response(json.dumps({'status': 200, "top_treks":top_treks}), status=200, mimetype="application/json")
+		return Response(json.dumps(top_treks), status=200, mimetype="application/json")
 	else:
 		logger.info("Length of top_treks is zero!")
 		return Response("Unable to top fetch treks!", status=201)
@@ -117,9 +118,10 @@ def get_top_treks():
 @app.route("/trekohunt/get_local_treks", methods=['GET'])
 def get_local_treks():
 	local_treks = action_get_local_treks()
+	local_treks = {'status': 200, "local_treks": local_treks}
 	if len(local_treks) > 0:
 		logger.info("Sending back: {}".format(local_treks))
-		return Response(json.dumps({'status': 200, "local_treks": local_treks}), status=200, mimetype="application/json")
+		return Response(json.dumps(local_treks), status=200, mimetype="application/json")
 	else:
 		logger.info("Length of local_treks is zero!")
 		return Response("Unable to local fetch treks!", status=201)

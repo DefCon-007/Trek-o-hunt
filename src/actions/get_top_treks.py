@@ -11,7 +11,11 @@ def get_top_treks(top_no=10):
 	Array of all top top_no treks
 	"""
 	db_treks = MyMongoDB("Treks")
-	top_treks = [trek for trek in db_treks.find({})]
+
+	top_treks = []
+	for trek in db_treks.find({}):
+		del trek['_id']
+		top_treks.append(trek)
 	return top_treks
 
 
