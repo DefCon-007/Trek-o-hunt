@@ -1,16 +1,23 @@
+import sys
+import os
+parent_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))).replace('\\', '/'))
+sys.path.append(parent_dir)
+print parent_dir
 import json
 import src.config.config_paths as config_paths
 from src.utility.common_functions import does_dir_exist, create_dir
-from flask import Flask, render_template, request, Response, session
+from flask import Flask, render_template, request, Response, session, redirect, url_for
 from src.actions.login import login as action_login
 from src.actions.logout import logout as action_logout
 from werkzeug.utils import secure_filename
 from src.actions.register import register as action_register
 from src.utility.get_logger import MyLogger
+from flask import send_from_directory
 
-logger = MyLogger.logger
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask(__name__)
+logger = MyLogger.logger
 app.secret_key = '102394873782491'
 
 
@@ -68,40 +75,44 @@ def logout():
 		logger.exception(e)
 		return Response("Unable to logout!",  status=201)
 
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route("/trekohunt/save_images", methods=["POST"])
-def save_images():
-	if 'file' not in request.files:
-		logger.info('No file part')
-		return Response("No file part",  status=100)
-	file = request.files['file']
-	if file.filename == '':
-		logger.info('No file selected!')
-		return Response("No file selected!", status=100)
-	if file:
-		filename = secure_filename(file.filename)
-		file.save(config_paths.images_path + "/" + filename)
-		return Response("Successfully saved images", status=200)
-
-
-@app.route("/trekohunt/get_images", methods=["GET"])
-def get_images():
-	if 'file' not in request.files:
-		logger.info('No file part')
-		return Response("No file part",  status=100)
-	file = request.files['file']
-	if file.filename == '':
-		logger.info('No file selected!')
-		return Response("No file selected!", status=100)
-	if file:
-		filename = secure_filename(file.filename)
-		file.save(config_paths.images_path + "/" + filename)
-		return Response("Successfully saved images", status=200)
-
+@app.route('/trekohunt/save_images', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(config_paths.images_path + "/" + filename)
+            return redirect(url_for('uploaded_file',
+                                    filename=filename))
+    return '''
+    <!doctype html>
+    <title>Upload new File</title>
+    <h1>Upload new File</h1>
+    <form action="/trekohunt/save_images" method="POST" enctype="multipart/form-data" >
+      <p><input type=file name=file>
+         <input type=submit value=Upload>
+    </form>
+    '''
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+	return send_from_directory(config_paths.images_path,filename)
 
 def start_app(host):
 	app.logger.disabled = True
-	app.run(port=config_paths.port_no, host=host)
+	app.run(port=config_paths.port_no, host=host,debug=True)
 
 
 if __name__ == "__main__":
