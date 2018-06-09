@@ -18,12 +18,16 @@ def main():
 
 @app.route("/trekohunt/login", methods=["POST"])
 def login():
-	req = json.loads(request.data.decode("utf-8"))
-	logger.info("Got request:")
-	logger.info(req)
+	if request.data.decode("utf-8") is not "":
+		req_data = json.loads(request.data.decode("utf-8"))
+	elif request.form.to_dict() != {}:
+		req_data = request.form.to_dict()
+	else:
+		logger.info("No data received")
+		return Response("Failure", status=100)
 
 	try:
-		ret = action_login(**req)
+		ret = action_login(**req_data)
 		return Response(json.dumps(ret), status=200, mimetype="application/json")
 	except Exception as e:
 		logger.exception(e)
@@ -32,12 +36,17 @@ def login():
 
 @app.route("/trekohunt/register", methods=["POST"])
 def register():
-	req = json.loads(request.data.decode("utf-8"))
+	if request.data.decode("utf-8") is not "":
+		req_data = json.loads(request.data.decode("utf-8"))
+	elif request.form.to_dict() != {}:
+		req_data = request.form.to_dict()
+	else:
+		logger.info("No data received")
+		return Response("Failure", status=100)
 	logger.info("Got request:")
-	logger.info(req)
-
+	logger.info(req_data)
 	try:
-		ret = action_register(**req)
+		ret = action_register(**req_data)
 		return Response(json.dumps(ret), status=200, mimetype="application/json")
 	except Exception as e:
 		logger.exception(e)
