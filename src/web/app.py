@@ -44,9 +44,9 @@ def register():
 		return Response("Failure",  status=100)
 
 
-def start_app():
+def start_app(host):
 	app.logger.disabled = True
-	app.run(port=config_paths.port_no)
+	app.run(port=config_paths.port_no, host=host)
 
 
 if __name__ == "__main__":

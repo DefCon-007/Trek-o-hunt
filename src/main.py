@@ -10,4 +10,4 @@ import src.config.config_paths as config_paths
 if __name__ == "__main__":
 	if not does_dir_exist(config_paths.log_op_path):
 		create_dir(config_paths.log_op_path)
-	start_app()
+	start_app(host="0.0.0.0")
