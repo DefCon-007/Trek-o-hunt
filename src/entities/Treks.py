@@ -17,7 +17,3 @@ class Treks:
 		self.elevation = kwargs['elevation']
 		self.transport_means = kwargs['transport_means']
 		self.hunt_images = kwargs['hunt_images']
-
-	def save_data_to_db(self):
-		pass
-

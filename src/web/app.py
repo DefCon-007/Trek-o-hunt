@@ -6,8 +6,10 @@ print parent_dir
 import json
 import src.config.config_paths as config_paths
 from src.utility.common_functions import does_dir_exist, create_dir
-from flask import Flask, render_template, request, Response, session, redirect, url_for
+from flask import Flask, render_template, request, Response, session, send_from_directory, redirect, url_for
 from src.actions.login import login as action_login
+from src.actions.get_top_treks import get_top_treks as action_get_top_treks
+from src.actions.get_local_treks import get_local_treks as action_get_local_treks
 from src.actions.logout import logout as action_logout
 from werkzeug.utils import secure_filename
 from src.actions.register import register as action_register
@@ -16,7 +18,7 @@ from flask import send_from_directory
 
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='images')
 logger = MyLogger.logger
 app.secret_key = '102394873782491'
 
@@ -69,11 +71,67 @@ def register():
 @app.route("/trekohunt/logout", methods=["POST", "GET"])
 def logout():
 	try:
-		ret = session.pop('username', None)
+		ret = action_logout()
+		session.pop('username', None)
 		return Response(json.dumps(ret), status=200, mimetype="application/json")
 	except Exception as e:
 		logger.exception(e)
 		return Response("Unable to logout!",  status=201)
+
+'''
+@app.route("/trekohunt/save_images", methods=["POST"])
+def save_images():
+	if 'file' not in request.files:
+		logger.info('No file part')
+		return Response("No file part",  status=100)
+	file = request.files['file']
+	if file.filename == '':
+		logger.info('No file selected!')
+		return Response("No file selected!", status=100)
+	if file:
+		filename = secure_filename(file.filename)
+		file.save(config_paths.images_path + "/" + filename)
+		return Response("Successfully saved images", status=200)
+
+
+@app.route("/images/<path:filename>", methods=["GET", "POST"])
+def get_images(filename):
+	return send_from_directory(directory='images', filename=filename)
+'''
+
+@app.route("/trekohunt/get_top_treks", methods=['GET'])
+def get_top_treks():
+	top_treks = action_get_top_treks()
+	top_treks = {'status': 200, "top_treks": top_treks}
+	if len(top_treks) > 0:
+		logger.info("Sending back: {}".format(top_treks))
+		return Response(json.dumps(top_treks), status=200, mimetype="application/json")
+	else:
+		logger.info("Length of top_treks is zero!")
+		return Response("Unable to top fetch treks!", status=201)
+
+
+@app.route("/trekohunt/get_local_treks", methods=['GET'])
+def get_local_treks():
+	local_treks = action_get_local_treks()
+	local_treks = {'status': 200, "local_treks": local_treks}
+	if len(local_treks) > 0:
+		logger.info("Sending back: {}".format(local_treks))
+		return Response(json.dumps(local_treks), status=200, mimetype="application/json")
+	else:
+		logger.info("Length of local_treks is zero!")
+		return Response("Unable to local fetch treks!", status=201)
+
+
+@app.route("/trekohunt/save_trek", methods=['GET'])
+def save_trek():
+	local_treks = action_get_local_treks()
+	if len(local_treks) > 0:
+		logger.info("Sending back: {}".format(local_treks))
+		return Response(json.dumps({'status': 200, "local_treks": local_treks}), status=200, mimetype="application/json")
+	else:
+		logger.info("Length of local_treks is zero!")
+		return Response("Unable to local fetch treks!", status=201)
 
 def allowed_file(filename):
     return '.' in filename and \
