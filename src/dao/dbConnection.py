@@ -1,7 +1,7 @@
 import pymongo
 from pymongo import ReturnDocument
-from abc import ABC
-from src.utility.Singleton import Singleton
+#from abc import ABC
+#rom src.utility.Singleton import Singleton
 import json
 from src.config.config_paths import level
 from src.utility.get_logger import MyLogger
@@ -9,7 +9,7 @@ from src.utility.get_logger import MyLogger
 logger = MyLogger.logger
 
 
-class Conn(Singleton):
+class Conn():
 	_conn = None
 
 	@staticmethod
@@ -27,7 +27,7 @@ class Conn(Singleton):
 		return Conn._conn
 
 
-class MongoDB(ABC):
+class MongoDB():
 
 	_db_name = "trekohunt"
 
