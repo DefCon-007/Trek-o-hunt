@@ -177,5 +177,6 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+/home/ayush/Desktop/pyCharm/Trek-o-hunt/properties/config.properties
 
 # End of https://www.gitignore.io/api/pycharm,python,django

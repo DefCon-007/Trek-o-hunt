@@ -2,7 +2,6 @@ import sys
 import os
 parent_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))).replace('\\', '/'))
 sys.path.append(parent_dir)
-print parent_dir
 import json
 import src.config.config_paths as config_paths
 from src.utility.common_functions import does_dir_exist, create_dir
@@ -16,7 +15,7 @@ from src.actions.register import register as action_register
 from src.utility.get_logger import MyLogger
 from flask import send_from_directory
 
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+ALLOWED_EXTENSIONS = {'svg', 'png', 'jpg', 'jpeg', 'gif'}
 
 app = Flask(__name__, static_folder='images')
 logger = MyLogger.logger
@@ -49,7 +48,6 @@ def login():
 
 @app.route("/trekohunt/register", methods=["POST"])
 def register():
-	f = request.files['files']
 	if request.data.decode("utf-8") is not "":
 		req_data = json.loads(request.data.decode("utf-8"))
 	elif request.form.to_dict() != {}:
@@ -78,26 +76,6 @@ def logout():
 		logger.exception(e)
 		return Response("Unable to logout!",  status=201)
 
-'''
-@app.route("/trekohunt/save_images", methods=["POST"])
-def save_images():
-	if 'file' not in request.files:
-		logger.info('No file part')
-		return Response("No file part",  status=100)
-	file = request.files['file']
-	if file.filename == '':
-		logger.info('No file selected!')
-		return Response("No file selected!", status=100)
-	if file:
-		filename = secure_filename(file.filename)
-		file.save(config_paths.images_path + "/" + filename)
-		return Response("Successfully saved images", status=200)
-
-
-@app.route("/images/<path:filename>", methods=["GET", "POST"])
-def get_images(filename):
-	return send_from_directory(directory='images', filename=filename)
-'''
 
 @app.route("/trekohunt/get_top_treks", methods=['GET'])
 def get_top_treks():
@@ -133,40 +111,45 @@ def save_trek():
 		logger.info("Length of local_treks is zero!")
 		return Response("Unable to local fetch treks!", status=201)
 
+
 def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+	return '.' in filename and \
+		filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 @app.route('/trekohunt/save_images', methods=['GET', 'POST'])
 def upload_file():
-    if request.method == 'POST':
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['file']
-        # if user does not select file, browser also
-        # submit a empty part without filename
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(config_paths.images_path + "/" + filename)
-            return redirect(url_for('uploaded_file',
-                                    filename=filename))
-    return '''
-    <!doctype html>
-    <title>Upload new File</title>
-    <h1>Upload new File</h1>
-    <form action="/trekohunt/save_images" method="POST" enctype="multipart/form-data" >
-      <p><input type=file name=file>
-         <input type=submit value=Upload>
-    </form>
-    '''
-@app.route('/uploads/<filename>')
+	if request.method == 'POST':
+		# check if the post request has the file part
+		if 'file' not in request.files:
+			logger.info('No file part')
+			return redirect(request.url)
+		file = request.files['file']
+		# if user does not select file, browser also
+		# submit a empty part without filename
+		if file.filename == '':
+			logger.info('No selected file')
+			return redirect(request.url)
+		if file and allowed_file(file.filename):
+			filename = secure_filename(file.filename)
+			file.save(config_paths.images_path + "/" + filename)
+			return redirect(url_for('uploaded_file', filename=filename))
+	return '''
+	<!doctype html>
+	<title>Upload new File</title>
+	<h1>Upload new File</h1>
+	<form action="/trekohunt/save_images" method="POST" enctype="multipart/form-data" >
+	<p><input type=file name=file>
+	<input type=submit value=Upload>
+	</form>
+	'''
+
+
+@app.route('/uploads/<filename>', methods=["GET", "POST"])
 def uploaded_file(filename):
-	return send_from_directory(config_paths.images_path,filename)
+	logger.info("Got request to download image: {}".format(filename))
+	return send_from_directory(config_paths.images_path, filename)
+
 
 def start_app(host):
 	app.logger.disabled = True
